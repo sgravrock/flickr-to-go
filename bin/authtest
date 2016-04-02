@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+require 'flickraw'
+
+def require_env(name)
+	value = ENV[name]
+
+	if value.nil? || value.empty?
+		$stderr.puts("Please set the #{name} environment variable.")
+		exit(1)
+	end
+
+	value
+end
+
+FlickRaw.api_key = require_env('FLICKR_API_KEY')
+FlickRaw.shared_secret = require_env('FLICKR_API_SECRET')
+token = flickr.get_request_token
+auth_url = flickr.get_authorize_url(token['oauth_token'], :perms => 'read')
+
+if system('open', auth_url)
+	puts 'The Flickr login page should have opened in your browser. Please log in.'
+else
+	puts 'Open this URL in your browser to log in to Flickr:'
+	puts auth_url
+end
+
+puts 'When you have finished logging in, please enter the access code here:'
+code = gets.strip
+
+begin
+	flickr.get_access_token(token['oauth_token'], token['oauth_token_secret'], code)
+	login = flickr.test.login
+	puts "Username: #{login.username}"
+	puts "Access token: #{flickr.access_token}"
+	puts "Secret: #{flickr.access_secret}"
+rescue FlickRaw::FailedResponse => e
+	puts "Authentication failed : #{e.msg}"
+end
+
