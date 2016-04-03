@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require 'flickraw'
 require_relative '../lib/flickr-to-go/session'
 require_relative '../lib/flickr-to-go/console_auth_ui_adapter'
 
@@ -14,10 +13,9 @@ def require_env(name)
 	value
 end
 
-FlickRaw.api_key = require_env('FLICKR_API_KEY')
-FlickRaw.shared_secret = require_env('FLICKR_API_SECRET')
-adapter = FlickrToGo::ConsoleAuthUiAdapter.new
-session = FlickrToGo::Session.new(flickr, adapter)
+api_key = require_env('FLICKR_API_KEY')
+shared_secret = require_env('FLICKR_API_SECRET')
+session = FlickrToGo::Session.with_app_credentials(api_key, shared_secret)
 session.authorize
 login = flickr.test.login
 puts "Username: #{login.username}"
