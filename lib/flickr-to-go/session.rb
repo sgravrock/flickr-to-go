@@ -21,9 +21,9 @@ module FlickrToGo
 			redeem_access_code(token, code) if code
 		end 
 		
-		def get_user_photos(page, per_page, safe_search)
+		def get_user_photos(page, per_page, safe_search, extras)
 			response = flickr.people.getPhotos(user_id: 'me', page: page,
-				per_page: per_page, safe_search: safe_search)
+				per_page: per_page, safe_search: safe_search, extras: extras)
 			response.map { |r| r.to_hash }
 		end
 

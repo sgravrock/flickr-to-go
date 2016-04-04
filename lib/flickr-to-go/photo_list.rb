@@ -12,7 +12,7 @@ module FlickrToGo
 				i = 1
 	
 				loop do
-					page = session.get_user_photos(i, page_size, 3)
+					page = session.get_user_photos(i, page_size, 3, :original_format)
 					photos += page
 					break if page.length < page_size
 					i += 1

@@ -21,9 +21,11 @@ describe 'PhotoList' do
 					"ispublic"=>1,"isfriend"=>0,"isfamily"=>0}
 			]
 			page_size = 2
-			expect(session).to receive(:get_user_photos).with(1, page_size, 3)
+			expect(session).to receive(:get_user_photos)
+				.with(1, page_size, 3, :original_format)
 				.and_return([photos[0], photos[1]])
-			expect(session).to receive(:get_user_photos).with(2, page_size, 3)
+			expect(session).to receive(:get_user_photos)
+				.with(2, page_size, 3, :original_format)
 				.and_return([photos[2]])
 			expect(File).to receive(:write).with(path, anything) do |p, s|
 				expect(JSON.parse(s)).to eq(photos)
