@@ -1,4 +1,5 @@
 require 'flickraw'
+require_relative 'console_auth_ui_adapter'
 
 module FlickrToGo
 	class Session
@@ -18,12 +19,19 @@ module FlickrToGo
 			token = @flickr.get_request_token
 			code = get_access_code(token)
 			redeem_access_code(token, code) if code
+		end 
+		
+		def get_user_photos(page, per_page, safe_search)
+			response = flickr.people.getPhotos(user_id: 'me', page: page,
+				per_page: per_page, safe_search: safe_search)
+			response.map { |r| r.to_hash }
 		end
 
 		attr_accessor(:access_token, :access_secret)
-		attr_reader(:flickr)
 
 		private
+
+		attr_reader(:flickr)
 
 		def get_access_code(oauth_token)
 			url = flickr.get_authorize_url(oauth_token['oauth_token'])
