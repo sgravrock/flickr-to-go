@@ -2,4 +2,4 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/../lib'))
 require 'flickr_to_go'
 
-FlickrToGo::Cli.run
+FlickrToGo::Cli.new.run

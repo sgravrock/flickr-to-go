@@ -1,7 +1,9 @@
 module FlickrToGo
   module PhotoList
     def self.download(session, page_size=500)
-      save(get(session, page_size))
+      photo_list = get(session, page_size)
+      save(photo_list)
+      photo_list
     end
 
     class << self

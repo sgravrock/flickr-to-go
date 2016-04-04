@@ -30,7 +30,8 @@ describe 'PhotoList' do
       expect(File).to receive(:write).with(path, anything) do |p, s|
         expect(JSON.parse(s)).to eq(photos)
       end
-      FlickrToGo::PhotoList.download(session, page_size)
+      result = FlickrToGo::PhotoList.download(session, page_size)
+      expect(result).to eq(photos)
     end
   end
 end
