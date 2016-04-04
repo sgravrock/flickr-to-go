@@ -30,7 +30,8 @@ describe 'Session' do
 			before do
 				expect(flickr_client).to receive(:get_request_token)
 					.and_return(oauth_token)
-				expect(flickr_client).to receive(:get_authorize_url).with('t')
+				expect(flickr_client).to receive(:get_authorize_url)
+					.with('t', :perms => :read)
 					.and_return(url)
 			end
 	

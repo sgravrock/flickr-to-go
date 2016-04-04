@@ -34,7 +34,8 @@ module FlickrToGo
 		attr_reader(:flickr)
 
 		def get_access_code(oauth_token)
-			url = flickr.get_authorize_url(oauth_token['oauth_token'])
+			url = flickr.get_authorize_url(oauth_token['oauth_token'],
+				:perms => :read)
 			code = @auth_ui_adapter.request_access_code(url)
 		end
 
