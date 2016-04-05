@@ -3,14 +3,14 @@ require_relative '../lib/flickr-to-go/session'
 require_relative '../lib/flickr-to-go/console_auth_ui_adapter'
 
 def require_env(name)
-	value = ENV[name]
+  value = ENV[name]
 
-	if value.nil? || value.empty?
-		$stderr.puts("Please set the #{name} environment variable.")
-		exit(1)
-	end
+  if value.nil? || value.empty?
+    $stderr.puts("Please set the #{name} environment variable.")
+    exit(1)
+  end
 
-	value
+  value
 end
 
 api_key = require_env('FLICKR_API_KEY')
