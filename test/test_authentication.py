@@ -1,21 +1,11 @@
 import unittest
 import sys
 import urllib2
+from mock import patch
+from StringIO import StringIO
 from authentication import authenticate
 
 to_raise = None
-
-class MockReadable:
-  def __init__(self, contents):
-    self.contents = contents
-  def readline(self):
-    if len(self.contents) == 0:
-      return '' # EOF
-    return self.contents.pop(0)
-
-class MockWriteable:
-  def write(self, s):
-    pass
 
 class MockAuthHandler:
   def __init__(self, callback=None):
@@ -36,36 +26,35 @@ class MockFlickrApi:
     self.auth_handler = handler
     
 
+@patch('sys.stdout', new_callable=StringIO)
 class TestAuthentication(unittest.TestCase):
   def setUp(self):
     global to_raise
     to_raise = None
-  def test_success(self):
-    input = MockReadable(['the code'])
-    output = MockWriteable()
+
+  @patch('sys.stdin', StringIO("the code"))
+  def test_success(self, stdout):
     flickr = MockFlickrApi()
-    result = authenticate(flickr, MockAuthHandler, output, input)
+    result = authenticate(flickr, MockAuthHandler)
     self.assertTrue(result)
     self.assertEqual(auth_instance.callback, 'oob')
     self.assertEqual(auth_instance.perms, 'read')
     self.assertEqual(auth_instance.verifier, 'the code')
     self.assertEqual(flickr.auth_handler, auth_instance)
 
-  def test_EOF(self):
-    input = MockReadable([])
-    output = MockWriteable()
+  @patch('sys.stdin', StringIO())
+  def test_EOF(self, stdout):
     flickr = MockFlickrApi()
-    result = authenticate(flickr, MockAuthHandler, output, input)
+    result = authenticate(flickr, MockAuthHandler)
     self.assertFalse(result)
 
-  def test_http_error(self):
+  @patch('sys.stdin', StringIO("the code"))
+  def test_http_error(self, stdout):
     global to_raise
-    input = MockReadable(['the code'])
-    output = MockWriteable()
     flickr = MockFlickrApi()
     to_raise = urllib2.HTTPError('http://example.com/auth/', 401, 'nope',
       None, None)
-    result = authenticate(flickr, MockAuthHandler, output, input)
+    result = authenticate(flickr, MockAuthHandler)
     self.assertFalse(result)
 
 
