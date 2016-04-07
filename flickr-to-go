@@ -5,6 +5,7 @@ import os
 from urllib2 import HTTPError
 import flickr_api
 from flickr_api import auth
+from authentication import authenticate
 
 def require_env(key):
   if os.environ.has_key(key):
@@ -16,18 +17,5 @@ def require_env(key):
 key = require_env('FLICKR_API_KEY')
 secret = require_env('FLICKR_API_SECRET')
 flickr_api.set_keys(api_key = key, api_secret = secret)
-a = auth.AuthHandler(callback='oob')
-print("Open this in your browser: " + a.get_authorization_url('read'))
-print("Once you finish logging in, enter the code from the browser: "),
-code = sys.stdin.readline().strip()
-
-if code == "":
-  exit(1)
-
-try:
-  a.set_verifier(code)
-except HTTPError, e:
-  sys.stderr.write("Could not log in. Server returned %s\n" % e.code)
-  exit(1)
-
-flickr_api.set_auth_handler(a)
+if not authenticate(flickr_api, auth.AuthHandler):
+	exit(1)
