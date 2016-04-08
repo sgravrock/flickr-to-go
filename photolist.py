@@ -18,5 +18,6 @@ def fetch(flickr, page_size):
 
 def fetch_page(flickr, page_size, page_ix):
     doc = flickr.people.getPhotos(user_id='me', page=page_ix,
-            per_page=page_size, format='json', nojsoncallback=1)
+            per_page=page_size, format='json', nojsoncallback=1,
+            extras='url_o')
     return json.loads(doc)['photos']['photo']

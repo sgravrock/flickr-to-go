@@ -46,9 +46,9 @@ class TestPhotoList(unittest.TestCase):
         result = photolist.download(MockFileStore(), self.flickr,
                 self.page_size)
         self.flickr.people.getPhotos.assert_has_calls([
-                call(page=1, per_page=2, user_id='me',
+                call(page=1, per_page=2, user_id='me', extras='url_o',
                     format='json', nojsoncallback=1),
-                call(page=2, per_page=2, user_id='me',
+                call(page=2, per_page=2, user_id='me', extras='url_o',
                     format='json', nojsoncallback=1)])
         self.assertEqual(result, self.photos)
 

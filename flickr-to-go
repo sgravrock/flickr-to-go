@@ -9,6 +9,7 @@ from flickr_api.api import flickr
 from authentication import authenticate
 from storage import FileStore
 import photolist
+import photo
 
 def require_env(key):
     if os.environ.has_key(key):
@@ -25,4 +26,6 @@ user = authenticate(flickr_api, auth.AuthHandler)
 if not user:
     exit(1)
 
-photolist.download(FileStore(), flickr)
+file_store = FileStore()
+photos = photolist.download(file_store, flickr)
+photo.download_originals(photos, file_store)
