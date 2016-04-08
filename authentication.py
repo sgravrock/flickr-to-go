@@ -30,12 +30,12 @@ def authenticate(flickr_api, auth_handler_class, ui_adapter=None):
     a = auth_handler_class(callback='oob')
     code = ui_adapter.prompt_for_code(a.get_authorization_url('read'))
     if code == "":
-        return False
+        return None
 
     try:
         a.set_verifier(code)
     except HTTPError, e:
         ui_adapter.error("Could not log in. Server returned %s." % e.code)
-        return False
+        return None
     flickr_api.set_auth_handler(a)
-    return True
+    return flickr_api.test.login()

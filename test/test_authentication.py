@@ -22,8 +22,15 @@ class MockAuthHandler:
         self.verifier = code
 
 class MockFlickrApi:
+    def __init__(self):
+        self.test = MockFlickrTestThing()
     def set_auth_handler(self, handler):
         self.auth_handler = handler
+        self.test.user = {}
+
+class MockFlickrTestThing:
+    def login(self):
+        return self.user
 
 class MockAuthUi:
     def __init__(self, code, can_error=False):
@@ -45,7 +52,7 @@ class TestAuthentication(unittest.TestCase):
         flickr = MockFlickrApi()
         result = authenticate(flickr, MockAuthHandler,
                 MockAuthUi('the code'))
-        self.assertTrue(result)
+        self.assertIs(result, flickr.test.login())
         self.assertEqual(auth_instance.callback, 'oob')
         self.assertEqual(auth_instance.perms, 'read')
         self.assertEqual(auth_instance.verifier, 'the code')
@@ -54,7 +61,7 @@ class TestAuthentication(unittest.TestCase):
     def test_EOF(self):
         flickr = MockFlickrApi()
         result = authenticate(flickr, MockAuthHandler, MockAuthUi(''))
-        self.assertFalse(result)
+        self.assertIs(result, None)
 
     def test_http_error(self):
         global to_raise
@@ -63,7 +70,7 @@ class TestAuthentication(unittest.TestCase):
                 'nope', None, None)
         result = authenticate(flickr, MockAuthHandler,
                 MockAuthUi('c', True))
-        self.assertFalse(result)
+        self.assertIs(result, None)
 
 
 if __name__ == '__main__':
