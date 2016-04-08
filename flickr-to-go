@@ -8,14 +8,14 @@ from flickr_api import auth
 from authentication import authenticate
 
 def require_env(key):
-  if os.environ.has_key(key):
-    return os.environ[key]
-  else:
-    sys.stderr.write("Please set the %s environment variable\n" % key)
-    exit(1)
+    if os.environ.has_key(key):
+        return os.environ[key]
+    else:
+        sys.stderr.write("Please set the %s environment variable\n" % key)
+        exit(1)
 
 key = require_env('FLICKR_API_KEY')
 secret = require_env('FLICKR_API_SECRET')
 flickr_api.set_keys(api_key = key, api_secret = secret)
 if not authenticate(flickr_api, auth.AuthHandler):
-	exit(1)
+    exit(1)
