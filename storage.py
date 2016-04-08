@@ -12,6 +12,9 @@ class FileStore:
         with open(name, 'wb') as f:
             f.write(data)
 
+    def exists(self, name):
+        return os.path.exists(name)
+
     def ensure_dir(self, filename):
         dirname = os.path.dirname(filename)
         if dirname != '':

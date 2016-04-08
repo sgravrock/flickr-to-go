@@ -32,7 +32,16 @@ class TestPhoto(unittest.TestCase):
             requests.contents[photos[i]['url_o']] = responses[i]
 
         file_store = Mock()
+        file_store.exists.return_value = False
         photo.download_originals(photos, file_store, requests)
         file_store.save_image.assert_has_calls([
                 call('originals/25461030990_o.jpg', responses[0]),
                 call('originals/23793491473_o.jpg', responses[1])])
+
+    def test_download_originals_skips_existing(self):
+        photos = [{'id': '25461030990', 'url_o': 'https://farm2.staticflickr.com/1521/25461030990_3621f6ae2d_o.jpg'}]
+        requests = Mock()
+        file_store = Mock()
+        file_store.exists.return_value = True
+        photo.download_originals(photos, file_store, requests)
+        self.assertEqual(requests.get.call_count, 0)
