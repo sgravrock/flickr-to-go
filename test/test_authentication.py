@@ -25,36 +25,42 @@ class MockFlickrApi:
   def set_auth_handler(self, handler):
     self.auth_handler = handler
     
+class MockAuthUi:
+  def __init__(self, code, can_error=False):
+    self.code = code
+    self.can_error = can_error
+  def prompt_for_code(self, url):
+    self.prompt_url = url
+    return self.code
+  def error(self, msg):
+    if not self.can_error:
+      raise Exception('Unexpected error: ' + msg)
 
-@patch('sys.stdout', new_callable=StringIO)
 class TestAuthentication(unittest.TestCase):
   def setUp(self):
     global to_raise
     to_raise = None
 
-  @patch('sys.stdin', StringIO("the code"))
-  def test_success(self, stdout):
+  def test_success(self):
     flickr = MockFlickrApi()
-    result = authenticate(flickr, MockAuthHandler)
+    result = authenticate(flickr, MockAuthHandler, MockAuthUi('the code'))
     self.assertTrue(result)
     self.assertEqual(auth_instance.callback, 'oob')
     self.assertEqual(auth_instance.perms, 'read')
     self.assertEqual(auth_instance.verifier, 'the code')
     self.assertEqual(flickr.auth_handler, auth_instance)
 
-  @patch('sys.stdin', StringIO())
-  def test_EOF(self, stdout):
+  def test_EOF(self):
     flickr = MockFlickrApi()
-    result = authenticate(flickr, MockAuthHandler)
+    result = authenticate(flickr, MockAuthHandler, MockAuthUi(''))
     self.assertFalse(result)
 
-  @patch('sys.stdin', StringIO("the code"))
-  def test_http_error(self, stdout):
+  def test_http_error(self):
     global to_raise
     flickr = MockFlickrApi()
     to_raise = urllib2.HTTPError('http://example.com/auth/', 401, 'nope',
       None, None)
-    result = authenticate(flickr, MockAuthHandler)
+    result = authenticate(flickr, MockAuthHandler, MockAuthUi('c', True))
     self.assertFalse(result)
 
 
