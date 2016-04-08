@@ -1,9 +1,12 @@
 import sys
+import subprocess
 from urllib2 import HTTPError
 
 def authenticate(flickr_api, auth_handler_class):
   a = auth_handler_class(callback='oob')
-  sys.stdout.write("Open this in your browser: %s\n" % a.get_authorization_url('read'))
+  url = a.get_authorization_url('read')
+  subprocess.call(['open', url])
+  #sys.stdout.write("Open this in your browser: %s\n" % a.get_authorization_url('read'))
   sys.stdout.write("Once you finish logging in, enter the code from the browser: \n"),
   code = sys.stdin.readline().strip()
 
