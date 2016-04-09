@@ -41,3 +41,4 @@ if not user:
 photos = photolist.download(file_store, flickr)
 flickr_collections.download(file_store, flickr)
 photo.download_originals(photos, file_store)
+photo.download_info(photos, file_store, flickr)

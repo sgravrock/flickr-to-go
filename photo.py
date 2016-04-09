@@ -1,5 +1,7 @@
 import requests
 import sys
+import os
+import json
 
 def download_originals(photolist, file_store, requests=requests,
         logger=sys.stdout):
@@ -12,3 +14,12 @@ def download_originals(photolist, file_store, requests=requests,
 
 def original_filename(photo):
     return 'originals/%s_o.jpg' % photo['id']
+
+def download_info(photolist, file_store, flickr, logger=sys.stdout):
+    for photo in photolist:
+        logger.write("Downloading info for %s\n" % photo['id'])
+        raw = flickr.photos.getInfo(photo_id=photo['id'], format='json',
+               nojsoncallback=1)
+        info = json.loads(raw)['photo']
+        file_store.save_json(os.path.join('photo-info', photo['id']), info)
+
