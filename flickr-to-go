@@ -11,6 +11,7 @@ from authentication import authenticate
 from storage import FileStore
 import photolist
 import photo
+import flickr_collections
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -38,4 +39,5 @@ if not user:
     exit(1)
 
 photos = photolist.download(file_store, flickr)
+flickr_collections.download(file_store, flickr)
 photo.download_originals(photos, file_store)
