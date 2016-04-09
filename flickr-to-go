@@ -3,6 +3,7 @@
 import sys
 import os
 from urllib2 import HTTPError
+import argparse
 import flickr_api
 from flickr_api import auth
 from flickr_api.api import flickr
@@ -11,6 +12,11 @@ from storage import FileStore
 import photolist
 import photo
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--savecreds', action='store_true')
+    return parser.parse_args()
+
 def require_env(key):
     if os.environ.has_key(key):
         return os.environ[key]
@@ -18,14 +24,17 @@ def require_env(key):
         sys.stderr.write("Please set the %s environment variable\n" % key)
         exit(1)
 
+
+args = parse_args()
 key = require_env('FLICKR_API_KEY')
 secret = require_env('FLICKR_API_SECRET')
 flickr_api.set_keys(api_key = key, api_secret = secret)
-user = authenticate(flickr_api, auth.AuthHandler)
+file_store = FileStore()
+user = authenticate(args.savecreds, flickr_api, auth.AuthHandler,
+        file_store)
 
 if not user:
     exit(1)
 
-file_store = FileStore()
 photos = photolist.download(file_store, flickr)
 photo.download_originals(photos, file_store)

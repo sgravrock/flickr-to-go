@@ -15,6 +15,17 @@ class FileStore:
     def exists(self, name):
         return os.path.exists(name)
 
+    def credentials_path(self):
+        return 'flickr-credentials'
+
+    def has_saved_credentials(self):
+        try:
+            with open(self.credentials_path()) as f:
+                f.read()
+        except IOError:
+            return False
+        return True
+
     def ensure_dir(self, filename):
         dirname = os.path.dirname(filename)
         if dirname != '':
