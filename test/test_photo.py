@@ -2,6 +2,7 @@ import unittest
 from mock import Mock, call
 import photo
 import json
+from StringIO import StringIO
 
 class MockRequests:
     def __init__(self):
@@ -33,7 +34,7 @@ class TestPhoto(unittest.TestCase):
 
         file_store = Mock()
         file_store.exists.return_value = False
-        photo.download_originals(photos, file_store, requests)
+        photo.download_originals(photos, file_store, requests, StringIO())
         file_store.save_image.assert_has_calls([
                 call('originals/25461030990_o.jpg', responses[0]),
                 call('originals/23793491473_o.jpg', responses[1])])
@@ -43,5 +44,5 @@ class TestPhoto(unittest.TestCase):
         requests = Mock()
         file_store = Mock()
         file_store.exists.return_value = True
-        photo.download_originals(photos, file_store, requests)
+        photo.download_originals(photos, file_store, requests, StringIO())
         self.assertEqual(requests.get.call_count, 0)
