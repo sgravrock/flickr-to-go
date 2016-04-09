@@ -3,3 +3,4 @@ dest
 .envrc
 *.pyc
 *.sw?
+.DS_Store
