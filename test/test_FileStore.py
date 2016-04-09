@@ -13,7 +13,7 @@ def raise_io_error(*args):
 class TestFileStore(unittest.TestCase):
     def test_save_json(self, mock_open, mock_mkdir):
         subject = storage.FileStore('root')
-        subject.save_json('foo/bar', {})
+        subject.save_json('foo/bar.json', {})
         mock_mkdir.assert_called_with('root/foo')
         mock_open.assert_called_with('root/foo/bar.json', 'w')
 

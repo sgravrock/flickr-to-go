@@ -7,7 +7,7 @@ class FileStore:
         self.root_path = root_path
 
     def save_json(self, name, obj):
-        filename = self.qualify(name + '.json')
+        filename = self.qualify(name)
         self.ensure_dir(filename)
         with open(filename, 'w') as f:
             json.dump(obj, f, indent=4)

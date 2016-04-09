@@ -42,4 +42,4 @@ class TestFlickrCollections(unittest.TestCase):
     def test_download_saves(self):
         file_store = MockFileStore()
         result = flickr_collections.download(file_store, self.flickr)
-        file_store.save_json.assert_called_with('collections', self.tree)
+        file_store.save_json.assert_called_with('collections.json', self.tree)

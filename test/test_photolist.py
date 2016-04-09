@@ -55,4 +55,4 @@ class TestPhotoList(unittest.TestCase):
     def test_download_saves(self):
         file_store = MockFileStore()
         photolist.download(file_store, self.flickr, self.page_size)
-        file_store.save_json.assert_called_with('photos', self.photos)
+        file_store.save_json.assert_called_with('photos.json', self.photos)

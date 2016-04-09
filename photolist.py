@@ -3,7 +3,7 @@ import re
 
 def download(file_store, flickr, page_size=500):
     photos = fetch(flickr, page_size)
-    file_store.save_json('photos', photos)
+    file_store.save_json('photos.json', photos)
     return photos
 
 def fetch(flickr, page_size):

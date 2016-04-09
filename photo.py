@@ -21,5 +21,8 @@ def download_info(photolist, file_store, flickr, logger=sys.stdout):
         raw = flickr.photos.getInfo(photo_id=photo['id'], format='json',
                nojsoncallback=1)
         info = json.loads(raw)['photo']
-        file_store.save_json(os.path.join('photo-info', photo['id']), info)
+        file_store.save_json(info_filename(photo), info)
+
+def info_filename(photo):
+    return os.path.join('photo-info', '%s.json' % photo['id'])
 

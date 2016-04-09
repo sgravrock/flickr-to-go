@@ -71,6 +71,6 @@ class TestPhoto(unittest.TestCase):
         photo.download_info(photos, file_store, MockFlickrApi(responses),
                 StringIO())
         file_store.save_json.assert_has_calls([
-            call('photo-info/1', responses['1']['photo']),
-            call('photo-info/2', responses['2']['photo'])
+            call('photo-info/1.json', responses['1']['photo']),
+            call('photo-info/2.json', responses['2']['photo'])
         ])
