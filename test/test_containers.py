@@ -1,7 +1,7 @@
 import unittest
 import json
 from mock import Mock, call
-from containers import download_collections, download_set_list
+from containers import download_collections, download_set_list, download_set_photolists
 
 
 class MockFlickrApi:
@@ -15,7 +15,7 @@ class MockFlickrCollections:
         self.getTree = Mock(return_value=result)
 
 class MockFlickrSets:
-    def configure(self, pages):
+    def configure_set_list(self, pages):
         self.getList = Mock(side_effect=lambda **kwargs: \
                 json.dumps(pages[kwargs['page'] - 1]))
 
@@ -63,19 +63,16 @@ def build_sets_response(sets):
 
 class TestDownloadSetList(unittest.TestCase):
     def setUp(self):
-      #  { "photosets": { "cancreate": 1, "page": 1, "pages": 17, "perpage": 3, "total": 50,
-   # "photoset": [
-    #] }, "stat": "ok" }
         self.sets = [
-            { "id": "1", "secret": "2" },
-            { "id": "3", "secret": "4" },
-            { "id": "5", "secret": "6" }
+            { 'id': '1', 'secret': '2' },
+            { 'id': '3', 'secret': '4' },
+            { 'id': '5', 'secret': '6' }
         ]
         self.page_size = 2
         page1 = build_sets_response(self.sets[0:2])
         page2 = build_sets_response(self.sets[2:3])
         self.flickr = MockFlickrApi()
-        self.flickr.photosets.configure([page1, page2])
+        self.flickr.photosets.configure_set_list([page1, page2])
 
     def test_fetches(self):
         result = download_set_list(MockFileStore(), self.flickr, self.page_size)
@@ -89,3 +86,97 @@ class TestDownloadSetList(unittest.TestCase):
         file_store = MockFileStore()
         download_set_list(file_store, self.flickr, self.page_size)
         file_store.save_json.assert_called_with('sets.json', self.sets)
+
+
+class TestDownloadSets(unittest.TestCase):
+    def test_simple(self):
+        sets = [
+            { 'id': '1', 'secret': '2' },
+            { 'id': '3', 'secret': '4' }
+        ]
+        end_response = { 'stat': 'fail', 'code': 1 }
+        responses = {
+            '1': {
+                'stat': 'ok',
+                'photoset': {
+                    'id': '1', 'primary': 'p', 'owner': 'uid2',
+                    'photo': [
+                        { 'id': '1', 'title': 't' },
+                        { 'id': '2', 'title': 't' },
+                    ]
+                }
+            },
+            '3': {
+                'stat': 'ok',
+                'photoset': {
+                    'id': '3', 'primary': 'p', 'owner': 'uid2',
+                    'photo': [
+                        { 'id': '3', 'title': 't' }
+                    ]
+                }
+            }
+        }
+        flickr = MockFlickrApi()
+        getPhotos = lambda **kwargs: json.dumps(
+            responses[kwargs['photoset_id']] if kwargs['page'] == 1 \
+                    else end_response)
+        flickr.photosets.getPhotos = Mock(side_effect=getPhotos)
+        file_store = MockFileStore()
+        download_set_photolists(sets, file_store, flickr, 2)
+        flickr.photosets.getPhotos.assert_has_calls([
+            call(photoset_id='1', page=1, per_page=2, format='json',
+                    nojsoncallback=1),
+            call(photoset_id='1', page=2, per_page=2, format='json',
+                    nojsoncallback=1),
+            call(photoset_id='3', page=1, per_page=2, format='json',
+                    nojsoncallback=1),
+            call(photoset_id='3', page=2, per_page=2, format='json',
+                    nojsoncallback=1)
+        ])
+        file_store.save_json.assert_has_calls([
+            call('set-photos/1.json', responses['1']['photoset']['photo']),
+            call('set-photos/3.json', responses['3']['photoset']['photo'])
+        ])
+
+    def test_paged(self):
+        sets = [{'id': '1', 'secret': '2'}]
+        pages = [
+            {
+                'stat': 'ok',
+                'photoset': {
+                    'id': '1', 'primary': 'p', 'owner': 'uid2',
+                    'photo': [
+                        { 'id': '1', 'title': 't' },
+                        { 'id': '2', 'title': 't' },
+                    ]
+                },
+            },
+            {
+                'stat': 'ok',
+                'photoset': {
+                    'id': '1', 'primary': 'p', 'owner': 'uid2',
+                    'photo': [
+                        { 'id': '3', 'title': 't' },
+                    ]
+                },
+            },
+            { 'stat': 'fail', 'code': 1 }
+        ]
+        flickr = MockFlickrApi()
+        flickr.photosets.getPhotos = Mock(side_effect=lambda **kwargs: \
+                json.dumps(pages[kwargs['page'] - 1]))
+        file_store = MockFileStore()
+        download_set_photolists(sets, file_store, flickr, 2)
+        flickr.photosets.getPhotos.assert_has_calls([
+            call(photoset_id='1', page=1, per_page=2, format='json',
+                    nojsoncallback=1),
+            call(photoset_id='1', page=2, per_page=2, format='json',
+                    nojsoncallback=1),
+            call(photoset_id='1', page=3, per_page=2, format='json',
+                    nojsoncallback=1)
+        ])
+        file_store.save_json.assert_called_with('set-photos/1.json', [
+            { 'id': '1', 'title': 't' },
+            { 'id': '2', 'title': 't' },
+            { 'id': '3', 'title': 't' }
+        ])
