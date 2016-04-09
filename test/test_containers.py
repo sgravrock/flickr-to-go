@@ -1,7 +1,7 @@
 import unittest
 import json
 from mock import Mock, call
-import flickr_collections
+from containers import download_collections
 
 
 class MockFlickrApi:
@@ -18,7 +18,7 @@ class MockFileStore:
         self.save_json = Mock()
 
 
-class TestFlickrCollections(unittest.TestCase):
+class TestDownloadCollections(unittest.TestCase):
     def setUp(self):
         self.tree = {
             "collection": [
@@ -33,13 +33,13 @@ class TestFlickrCollections(unittest.TestCase):
         }
         self.flickr = MockFlickrApi(self.tree)
 
-    def test_download_fetches(self):
-        result = flickr_collections.download(MockFileStore(), self.flickr)
+    def test_fetches(self):
+        result = download_collections(MockFileStore(), self.flickr)
         self.flickr.collections.getTree.assert_has_calls([
                 call(format='json', nojsoncallback=1)])
         self.assertEqual(result, self.tree)
 
-    def test_download_saves(self):
+    def test_saves(self):
         file_store = MockFileStore()
-        result = flickr_collections.download(file_store, self.flickr)
+        result = download_collections(file_store, self.flickr)
         file_store.save_json.assert_called_with('collections.json', self.tree)
