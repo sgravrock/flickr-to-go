@@ -3,20 +3,24 @@ import os
 import errno
 
 class FileStore:
+    def __init__(self, root_path):
+        self.root_path = root_path
+
     def save_json(self, name, obj):
-        with open(name + '.json', 'w') as f:
+        with open(self.qualify(name + '.json'), 'w') as f:
             json.dump(obj, f, indent=4)
 
     def save_image(self, name, data):
+        name = self.qualify(name)
         self.ensure_dir(name)
         with open(name, 'wb') as f:
             f.write(data)
 
     def exists(self, name):
-        return os.path.exists(name)
+        return os.path.exists(self.qualify(name))
 
     def credentials_path(self):
-        return 'flickr-credentials'
+        return self.qualify('flickr-credentials')
 
     def has_saved_credentials(self):
         try:
@@ -34,3 +38,6 @@ class FileStore:
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
+
+    def qualify(self, filename):
+        return os.path.join(self.root_path, filename)

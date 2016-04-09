@@ -15,6 +15,7 @@ import photo
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--savecreds', action='store_true')
+    parser.add_argument('--dest', default='.')
     return parser.parse_args()
 
 def require_env(key):
@@ -29,7 +30,7 @@ args = parse_args()
 key = require_env('FLICKR_API_KEY')
 secret = require_env('FLICKR_API_SECRET')
 flickr_api.set_keys(api_key = key, api_secret = secret)
-file_store = FileStore()
+file_store = FileStore(args.dest)
 user = authenticate(args.savecreds, flickr_api, auth.AuthHandler,
         file_store)
 
