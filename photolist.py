@@ -1,23 +1,9 @@
 import json
 import re
+from paged_download import paged_download
 
 def download(file_store, flickr, page_size=500):
-    photos = fetch(flickr, page_size)
-    file_store.save_json('photos.json', photos)
-    return photos
-
-def fetch(flickr, page_size):
-    page_ix = 1
-    result = []
-    while True:
-        page = fetch_page(flickr, page_size, page_ix)
-        result.extend(page)
-        if len(page) < page_size:
-            return result
-        page_ix += 1
-
-def fetch_page(flickr, page_size, page_ix):
-    doc = flickr.people.getPhotos(user_id='me', page=page_ix,
-            per_page=page_size, format='json', nojsoncallback=1,
-            extras='url_o')
-    return json.loads(doc)['photos']['photo']
+    return paged_download(file_store, flickr.people.getPhotos,
+            {'user_id': 'me', 'extras': 'url_o'},
+            lambda doc: doc['photos']['photo'],
+            page_size, 'photos.json')
