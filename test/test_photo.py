@@ -68,9 +68,18 @@ class TestPhoto(unittest.TestCase):
             '2': { "photo": { "id": "2", "secret": "s2" }, "stat": "ok" }
         }
         file_store = Mock()
+        file_store.exists.return_value = False
         photo.download_info(photos, file_store, MockFlickrApi(responses),
                 StringIO())
         file_store.save_json.assert_has_calls([
             call('photo-info/1.json', responses['1']['photo']),
             call('photo-info/2.json', responses['2']['photo'])
         ])
+
+    def test_download_infos_skips_existing(self):
+        photos = [{'id': '1'}]
+        file_store = Mock()
+        file_store.exists.return_value = True
+        flickr = MockFlickrApi({'1': {'photo': {}}})
+        photo.download_info(photos, file_store, flickr)
+        self.assertEqual(flickr.photos.getInfo.call_count, 0)
