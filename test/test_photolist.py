@@ -43,7 +43,7 @@ class TestPhotoList(unittest.TestCase):
         self.flickr = MockFlickrApi([page1, page2])
 
     def test_download_fetches(self):
-        result = photolist.download(MockFileStore(), self.flickr,
+        result = photolist.download(MockFileStore(), Mock(), self.flickr,
                 self.page_size)
         self.flickr.people.getPhotos.assert_has_calls([
                 call(page=1, per_page=2, user_id='me', extras='url_o',
@@ -54,5 +54,5 @@ class TestPhotoList(unittest.TestCase):
 
     def test_download_saves(self):
         file_store = MockFileStore()
-        photolist.download(file_store, self.flickr, self.page_size)
+        photolist.download(file_store, Mock(), self.flickr, self.page_size)
         file_store.save_json.assert_called_with('photos.json', self.photos)

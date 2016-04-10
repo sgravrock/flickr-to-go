@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+# Injects HTTP request failures for testing purposes.
+
+import os
+import httplib
+import random
+from main import flickr_to_go
+
+def chaos_getresponse(self, buffering=False):
+    if random.randint(0, 9) == 0:
+        print('Injecting chaos!')
+        raise httplib.BadStatusLine('')
+    else:
+        return self.real_getresponse(buffering)
+
+httplib.HTTPConnection.real_getresponse = httplib.HTTPConnection.getresponse
+httplib.HTTPConnection.getresponse = chaos_getresponse
+random.seed(None)
+
+key = os.environ['FLICKR_API_KEY']
+secret = os.environ['FLICKR_API_SECRET']
+if not flickr_to_go('dest', True, key, secret):
+    exit(1)

@@ -2,16 +2,8 @@
 
 import sys
 import os
-from urllib2 import HTTPError
 import argparse
-import flickr_api
-from flickr_api import auth
-from flickr_api.api import flickr
-from authentication import authenticate
-from storage import FileStore
-import photolist
-import photo
-import containers
+from main import flickr_to_go
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -30,17 +22,5 @@ def require_env(key):
 args = parse_args()
 key = require_env('FLICKR_API_KEY')
 secret = require_env('FLICKR_API_SECRET')
-flickr_api.set_keys(api_key = key, api_secret = secret)
-file_store = FileStore(args.dest)
-user = authenticate(args.savecreds, flickr_api, auth.AuthHandler,
-        file_store)
-
-if not user:
-    exit(1)
-
-photos = photolist.download(file_store, flickr)
-containers.download_collections(file_store, flickr)
-sets = containers.download_set_list(file_store, flickr)
-containers.download_set_photolists(sets, file_store, flickr)
-photo.download_originals(photos, file_store)
-photo.download_info(photos, file_store, flickr)
+if not flickr_to_go(args.dest, args.savecreds, key, secret):
+	exit(1)
