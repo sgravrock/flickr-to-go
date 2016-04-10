@@ -5,7 +5,7 @@ from httplib import BadStatusLine
 from mock import Mock, call, patch
 from StringIO import StringIO
 from containers import download_collections, download_set_list, download_set_photolists
-from download import ErrorHandler
+from download import FlickrApiDownloader, ErrorHandler
 
 
 class MockFlickrApi:
@@ -45,14 +45,16 @@ class TestDownloadCollections(unittest.TestCase):
         self.flickr.collections.configure(self.tree)
 
     def test_fetches(self):
-        result = download_collections(MockFileStore(), Mock(), self.flickr)
+        downloader = FlickrApiDownloader(MockFileStore(), Mock())
+        result = download_collections(downloader, self.flickr)
         self.flickr.collections.getTree.assert_has_calls([
                 call(format='json', nojsoncallback=1)])
         self.assertEqual(result, self.tree)
 
     def test_saves(self):
         file_store = MockFileStore()
-        result = download_collections(file_store, Mock(), self.flickr)
+        downloader = FlickrApiDownloader(file_store, Mock())
+        result = download_collections(downloader, self.flickr)
         file_store.save_json.assert_called_with('collections.json', self.tree)
 
 
@@ -79,8 +81,8 @@ class TestDownloadSetList(unittest.TestCase):
         self.flickr.photosets.configure_set_list([page1, page2])
 
     def test_fetches(self):
-        result = download_set_list(MockFileStore(), Mock(), self.flickr,
-                self.page_size)
+        downloader = FlickrApiDownloader(MockFileStore(), Mock())
+        result = download_set_list(downloader, self.flickr, self.page_size)
         self.flickr.photosets.getList.assert_has_calls([
             call(page=1, per_page=2, format='json', nojsoncallback=1),
             call(page=2, per_page=2, format='json', nojsoncallback=1)
@@ -89,7 +91,8 @@ class TestDownloadSetList(unittest.TestCase):
 
     def test_saves(self):
         file_store = MockFileStore()
-        download_set_list(file_store, Mock(), self.flickr, self.page_size)
+        downloader = FlickrApiDownloader(file_store, Mock())
+        download_set_list(downloader, self.flickr, self.page_size)
         file_store.save_json.assert_called_with('sets.json', self.sets)
 
 
@@ -127,7 +130,8 @@ class TestDownloadSets(unittest.TestCase):
                     else end_response)
         flickr.photosets.getPhotos = Mock(side_effect=getPhotos)
         file_store = MockFileStore()
-        download_set_photolists(sets, file_store, flickr, Mock(), 2)
+        downloader = FlickrApiDownloader(file_store, Mock())
+        download_set_photolists(sets, downloader, flickr, 2)
         flickr.photosets.getPhotos.assert_has_calls([
             call(photoset_id='1', page=1, per_page=2, format='json',
                     nojsoncallback=1),
@@ -172,7 +176,8 @@ class TestDownloadSets(unittest.TestCase):
                 json.dumps(pages[kwargs['page'] - 1]))
         file_store = MockFileStore()
         error_handler = ErrorHandler(StringIO())
-        download_set_photolists(sets, file_store, flickr, error_handler, 2)
+        downloader = FlickrApiDownloader(file_store, error_handler)
+        download_set_photolists(sets, downloader, flickr, 2)
         flickr.photosets.getPhotos.assert_has_calls([
             call(photoset_id='1', page=1, per_page=2, format='json',
                     nojsoncallback=1),
@@ -195,7 +200,8 @@ class TestDownloadSets(unittest.TestCase):
         file_store = MockFileStore()
         error_handler = ErrorHandler(StringIO())
         sets = [{'id': '1', 'secret': '2'}]
-        download_set_photolists(sets, file_store, flickr, error_handler, 2)
+        downloader = FlickrApiDownloader(file_store, error_handler)
+        download_set_photolists(sets, downloader, flickr, 2)
         file_store.save_json.assert_not_called()
         self.assertTrue(error_handler.has_errors())
 
@@ -209,7 +215,8 @@ class TestDownloadSets(unittest.TestCase):
         flickr_api.set_keys(api_key='test', api_secret='test')
         file_store = Mock()
         error_handler = ErrorHandler(StringIO())
-        download_set_photolists(sets, file_store, flickr, error_handler, 2)
+        downloader = FlickrApiDownloader(file_store, error_handler)
+        download_set_photolists(sets, downloader, flickr, 2)
         file_store.save_json.assert_not_called()
         params = {'nojsoncallback': 1, 'format': 'json', 'page': 1,
                 'per_page': 2, 'photoset_id': '1'}

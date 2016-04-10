@@ -1,37 +1,33 @@
 import json
 import os
-from download import download, paged_download, fetch_page
 from httplib import HTTPException
 
 
-def download_collections(file_store, error_handler, flickr):
-    return download(file_store, error_handler, flickr.collections.getTree, {},
+def download_collections(downloader, flickr):
+    return downloader.download(flickr.collections.getTree, {},
             lambda doc: doc['collections'],
             'collections.json')
 
-def download_set_list(file_store, error_handler, flickr, page_size=500):
-    return paged_download(file_store, error_handler, flickr.photosets.getList,
-            {},
+def download_set_list(downloader, flickr, page_size=500):
+    return downloader.paged_download(flickr.photosets.getList, {},
             lambda doc: doc['photosets']['photoset'],
             page_size, 'sets.json')
 
-def download_set_photolists(sets, file_store, flickr, error_handler,
-        page_size=500):
+def download_set_photolists(sets, downloader, flickr, page_size=500):
     for photoset in sets:
-        _download_set_photolist(photoset['id'], file_store, flickr,
-                error_handler, page_size)
+        _download_set_photolist(photoset['id'], downloader, flickr, page_size)
 
-def _download_set_photolist(id, file_store, flickr, error_handler, page_size):
-    result = _fetch_set_photolist(id, flickr, error_handler, page_size)
+def _download_set_photolist(id, downloader, flickr, page_size):
+    result = _fetch_set_photolist(id, downloader, flickr, page_size)
     if result:
         filename = os.path.join('set-photos', '%s.json' % id)
-        file_store.save_json(filename, result)
+        downloader.file_store.save_json(filename, result)
 
-def _fetch_set_photolist(id, flickr, error_handler, page_size):
+def _fetch_set_photolist(id, downloader, flickr, page_size):
     page_ix = 1
     result = []
     while True:
-        page = fetch_page(error_handler, flickr.photosets.getPhotos,
+        page = downloader.fetch_page(flickr.photosets.getPhotos,
                 {'photoset_id': id}, lambda doc: doc,
                 page_size, page_ix)
         if not page:
@@ -43,7 +39,7 @@ def _fetch_set_photolist(id, flickr, error_handler, page_size):
             if page['code'] == 1 and page_ix != 1:
                 return result
             else:
-                error_handler.add_error(flickr.photosets.getPhotos,
+                downloader.error_handler.add_error(flickr.photosets.getPhotos,
                         {'photoset_id': 'id'}, page)
                 return None
 

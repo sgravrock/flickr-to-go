@@ -6,7 +6,7 @@ import flickr_api
 from flickr_api.api import flickr
 from mock import Mock, patch
 from StringIO import StringIO
-from download import download, paged_download, ErrorHandler
+from download import FlickrApiDownloader, ErrorHandler
 
 class TestPagedDownload(unittest.TestCase):
     @patch('urllib2.AbstractHTTPHandler.do_open')
@@ -15,8 +15,8 @@ class TestPagedDownload(unittest.TestCase):
         flickr_api.set_keys(api_key='test', api_secret='test')
         file_store = Mock()
         error_handler = ErrorHandler(StringIO())
-        result = paged_download(file_store, error_handler,
-                flickr.people.getPublicPhotos, {},
+        downloader = FlickrApiDownloader(file_store, error_handler)
+        result = downloader.paged_download(flickr.people.getPublicPhotos, {},
                 lambda doc: doc,
                 500, 'ignored')
         self.assertIs(result, None)
@@ -34,8 +34,8 @@ class TestDownload(unittest.TestCase):
         flickr_api.set_keys(api_key='test', api_secret='test')
         file_store = Mock()
         error_handler = ErrorHandler(StringIO())
-        result = download(file_store, error_handler,
-                flickr.people.getPublicPhotos, {},
+        downloader = FlickrApiDownloader(file_store, error_handler)
+        result = downloader.download(flickr.people.getPublicPhotos, {},
                 lambda doc: doc,
                 'ignored')
         self.assertIs(result, None)

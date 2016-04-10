@@ -7,7 +7,7 @@ from storage import FileStore
 import photolist
 import photo
 import containers
-from download import ErrorHandler
+from download import FlickrApiDownloader, ErrorHandler
 
 def flickr_to_go(dest, savecreds, key, secret):
     flickr_api.set_keys(api_key=key, api_secret=secret)
@@ -18,17 +18,18 @@ def flickr_to_go(dest, savecreds, key, secret):
 
     err_path = os.path.join(dest, "errors.txt")
     with open(err_path, 'w') as errfile:
-	    errors = ErrorHandler(errfile)
-	    photos = photolist.download(file_store, errors, flickr)
-	    containers.download_collections(file_store, errors, flickr)
-	    sets = containers.download_set_list(file_store, errors, flickr)
-	    containers.download_set_photolists(sets, file_store, flickr, errors)
-	    photo.download_originals(photos, file_store)
-	    photo.download_info(photos, file_store, flickr, errors)
+        errors = ErrorHandler(errfile)
+        downloader = FlickrApiDownloader(file_store, errors)
+        photos = photolist.download(downloader, flickr)
+        containers.download_collections(downloader, flickr)
+        sets = containers.download_set_list(downloader, flickr)
+        containers.download_set_photolists(sets, downloader, flickr)
+        photo.download_originals(photos, file_store)
+        photo.download_info(photos, downloader, flickr, errors)
 
-	    if errors.has_errors():
-	        print("Some requests failed.")
-	        print("Errors are logged to %s" % err_path)
+        if errors.has_errors():
+            print("Some requests failed.")
+            print("Errors are logged to %s" % err_path)
             return False
 
     return True
