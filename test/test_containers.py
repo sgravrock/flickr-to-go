@@ -165,13 +165,14 @@ class TestDownloadSets(unittest.TestCase):
                     ]
                 },
             },
-            { 'stat': 'fail', 'code': 1 }
+            { 'stat': 'fail', 'code': 1, 'msg': 'Photoset not found' }
         ]
         flickr = MockFlickrApi()
         flickr.photosets.getPhotos = Mock(side_effect=lambda **kwargs: \
                 json.dumps(pages[kwargs['page'] - 1]))
         file_store = MockFileStore()
-        download_set_photolists(sets, file_store, flickr, Mock(), 2)
+        error_handler = ErrorHandler(StringIO())
+        download_set_photolists(sets, file_store, flickr, error_handler, 2)
         flickr.photosets.getPhotos.assert_has_calls([
             call(photoset_id='1', page=1, per_page=2, format='json',
                     nojsoncallback=1),
@@ -185,6 +186,18 @@ class TestDownloadSets(unittest.TestCase):
             { 'id': '2', 'title': 't' },
             { 'id': '3', 'title': 't' }
         ])
+        self.assertFalse(error_handler.has_errors())
+
+    def test_no_such_set(self):
+        flickr = MockFlickrApi()
+        response = {'stat': 'fail', 'code': 1, 'msg': 'Photoset not found'}
+        flickr.photosets.getPhotos = Mock(return_value=json.dumps(response))
+        file_store = MockFileStore()
+        error_handler = ErrorHandler(StringIO())
+        sets = [{'id': '1', 'secret': '2'}]
+        download_set_photolists(sets, file_store, flickr, error_handler, 2)
+        file_store.save_json.assert_not_called()
+        self.assertTrue(error_handler.has_errors())
 
     @patch('urllib2.AbstractHTTPHandler.do_open')
     def test_httpexception(self, mock_do_open):

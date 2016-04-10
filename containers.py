@@ -40,10 +40,12 @@ def _fetch_set_photolist(id, flickr, error_handler, page_size):
         # a nonexistent page is accessed. Unfortunately it also uses the
         # same error code for nonexistent photo sets and malformed params.
         if page['stat'] == 'fail':
-            if page['code'] == 1:
+            if page['code'] == 1 and page_ix != 1:
                 return result
             else:
-                return None # TODO: report?
+                error_handler.add_error(flickr.photosets.getPhotos,
+                        {'photoset_id': 'id'}, page)
+                return None
 
         result.extend(page['photoset']['photo'])
         page_ix += 1
