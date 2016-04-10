@@ -2,7 +2,7 @@ import requests
 import sys
 import os
 import json
-from paged_download import download
+from download import download
 
 def download_originals(photolist, file_store, requests=requests,
         logger=sys.stdout):

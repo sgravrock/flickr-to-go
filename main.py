@@ -7,7 +7,7 @@ from storage import FileStore
 import photolist
 import photo
 import containers
-from paged_download import ErrorHandler
+from download import ErrorHandler
 
 def flickr_to_go(dest, savecreds, key, secret):
     flickr_api.set_keys(api_key=key, api_secret=secret)

@@ -6,7 +6,7 @@ import flickr_api
 from flickr_api.api import flickr
 from mock import Mock, patch
 from StringIO import StringIO
-from paged_download import download, paged_download, ErrorHandler
+from download import download, paged_download, ErrorHandler
 
 class TestPagedDownload(unittest.TestCase):
     @patch('urllib2.AbstractHTTPHandler.do_open')

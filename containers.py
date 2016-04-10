@@ -1,6 +1,6 @@
 import json
 import os
-from paged_download import download, paged_download, fetch_page
+from download import download, paged_download, fetch_page
 from httplib import HTTPException
 
 

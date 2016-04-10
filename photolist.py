@@ -1,6 +1,6 @@
 import json
 import re
-from paged_download import paged_download
+from download import paged_download
 
 def download(file_store, error_handler, flickr, page_size=500):
     return paged_download(file_store, error_handler, flickr.people.getPhotos,

@@ -5,7 +5,7 @@ from httplib import BadStatusLine
 from mock import Mock, call, patch
 from StringIO import StringIO
 from containers import download_collections, download_set_list, download_set_photolists
-from paged_download import ErrorHandler
+from download import ErrorHandler
 
 
 class MockFlickrApi:
