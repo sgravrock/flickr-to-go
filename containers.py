@@ -27,21 +27,19 @@ def _fetch_set_photolist(id, downloader, flickr, page_size):
     page_ix = 1
     result = []
     while True:
-        page = downloader.fetch_page(flickr.photosets.getPhotos,
-                {'photoset_id': id}, lambda doc: doc,
-                page_size, page_ix)
-        if not page:
-            return None
         # Unlike most paged APIs, photosets.getPhotos returns an error when
         # a nonexistent page is accessed. Unfortunately it also uses the
         # same error code for nonexistent photo sets and malformed params.
-        if page['stat'] == 'fail':
-            if page['code'] == 1 and page_ix != 1:
-                return result
-            else:
-                downloader.error_handler.add_error(flickr.photosets.getPhotos,
-                        {'photoset_id': 'id'}, page)
-                return None
-
+        is_past_end = lambda page: \
+                page['stat'] == 'fail' and page['code'] == 1 and page_ix != 1
+        test_response = lambda page: \
+                page['stat'] != 'fail' or is_past_end(page)
+        page = downloader.fetch_page(flickr.photosets.getPhotos,
+                {'photoset_id': id}, lambda doc: doc,
+                page_size, page_ix, test_response)
+        if not page:
+            return None
+        if is_past_end(page):
+            return result
         result.extend(page['photoset']['photo'])
         page_ix += 1

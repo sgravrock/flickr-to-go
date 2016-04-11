@@ -3,6 +3,9 @@ from httplib import HTTPException
 import sys
 import traceback
 
+def _standard_test_response(response):
+    return response.get('stat') != 'fail'
+
 class FlickrApiDownloader:
     def __init__(self, file_store, error_handler):
         self.file_store = file_store
@@ -15,7 +18,11 @@ class FlickrApiDownloader:
         except HTTPException, e:
             self.error_handler.add_error(method, params, e)
             return None
-        result = data_accessor(json.loads(doc))
+        parsed = json.loads(doc)
+        if not _standard_test_response(parsed):
+            self.error_handler.add_error(method, params, parsed)
+            return None
+        result = data_accessor(parsed)
         self.file_store.save_json(dest_path, result)
         return result
 
@@ -27,7 +34,7 @@ class FlickrApiDownloader:
         return result
 
     def fetch_page(self, method, extra_params, data_accessor, page_size,
-            page_ix):
+            page_ix, test_response=_standard_test_response):
         params = _combine(extra_params, {'page': page_ix,
                 'per_page': page_size, 'format': 'json', 'nojsoncallback': 1})
         try:
@@ -35,7 +42,11 @@ class FlickrApiDownloader:
         except HTTPException, e:
             self.error_handler.add_error(method, params, e)
             return None
-        return data_accessor(json.loads(doc))
+        parsed = json.loads(doc)
+        if not test_response(parsed):
+            self.error_handler.add_error(method, params, parsed)
+            return None
+        return data_accessor(parsed)
 
     def _paged_fetch(self, method, extra_params, data_accessor, page_size):
         page_ix = 1
