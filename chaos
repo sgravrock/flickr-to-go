@@ -4,19 +4,22 @@
 
 import os
 import httplib
+import urllib2
+import socket
 import random
 from main import flickr_to_go
 
-def chaos_getresponse(self, buffering=False):
+def chaos_urlopen(url, data=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+            cafile=None, capath=None, cadefault=False, context=None):
     if random.randint(0, 9) == 0:
         print('Injecting chaos!')
         raise httplib.BadStatusLine('')
     else:
-        return self.real_getresponse(buffering)
+        return real_urlopen(url, data, timeout, cafile, capath,
+            cadefault, context)
 
-httplib.HTTPConnection.real_getresponse = httplib.HTTPConnection.getresponse
-httplib.HTTPConnection.getresponse = chaos_getresponse
-random.seed(None)
+real_urlopen = urllib2.urlopen = urllib2.urlopen
+urllib2.urlopen = chaos_urlopen
 
 key = os.environ['FLICKR_API_KEY']
 secret = os.environ['FLICKR_API_SECRET']
