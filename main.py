@@ -1,4 +1,5 @@
 import os
+import sys
 import flickr_api
 from flickr_api import auth
 from flickr_api.api import flickr
@@ -9,7 +10,7 @@ import photo
 import containers
 from download import FlickrApiDownloader, ErrorHandler
 
-def flickr_to_go(dest, savecreds, key, secret):
+def flickr_to_go(dest, savecreds, key, secret, output=sys.stdout):
     flickr_api.set_keys(api_key=key, api_secret=secret)
     file_store = FileStore(dest)
     user = authenticate(savecreds, flickr_api, auth.AuthHandler, file_store)
@@ -21,6 +22,9 @@ def flickr_to_go(dest, savecreds, key, secret):
         errors = ErrorHandler(errfile)
         downloader = FlickrApiDownloader(file_store, errors)
         photos = photolist.download(downloader, flickr)
+        if photos is None:
+            output.write("Photo list download failed. Can't continue.\n")
+            return False
         containers.download(downloader, flickr)
         photo.download(photos, downloader, flickr)
 
