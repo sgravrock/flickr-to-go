@@ -3,6 +3,10 @@ import sys
 import os
 import json
 
+def download(photos, downloader, flickr):
+    download_originals(photos, downloader.file_store)
+    download_info(photos, downloader, flickr)
+
 def download_originals(photolist, file_store, requests=requests,
         logger=sys.stdout):
     for photo in photolist:

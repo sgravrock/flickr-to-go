@@ -21,11 +21,8 @@ def flickr_to_go(dest, savecreds, key, secret):
         errors = ErrorHandler(errfile)
         downloader = FlickrApiDownloader(file_store, errors)
         photos = photolist.download(downloader, flickr)
-        containers.download_collections(downloader, flickr)
-        sets = containers.download_set_list(downloader, flickr)
-        containers.download_set_photolists(sets, downloader, flickr)
-        photo.download_originals(photos, file_store)
-        photo.download_info(photos, downloader, flickr)
+        containers.download(downloader, flickr)
+        photo.download(photos, downloader, flickr)
 
         if errors.has_errors():
             print("Some requests failed.")

@@ -2,6 +2,10 @@ import json
 import os
 from httplib import HTTPException
 
+def download(downloader, flickr):
+    download_collections(downloader, flickr)
+    sets = download_set_list(downloader, flickr)
+    download_set_photolists(sets, downloader, flickr)
 
 def download_collections(downloader, flickr):
     return downloader.download(flickr.collections.getTree, {},
