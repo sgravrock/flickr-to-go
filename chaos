@@ -5,6 +5,7 @@
 import os
 import httplib
 import urllib2
+import requests
 import socket
 import random
 from main import flickr_to_go
@@ -12,14 +13,25 @@ from main import flickr_to_go
 def chaos_urlopen(url, data=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
             cafile=None, capath=None, cadefault=False, context=None):
     if random.randint(0, 9) == 0:
-        print('Injecting chaos!')
+        print('Injecting urlopen chaos!')
         raise httplib.BadStatusLine('')
     else:
         return real_urlopen(url, data, timeout, cafile, capath,
             cadefault, context)
 
+def chaos_requests_get(url, params=None):
+    print("get: %s" % url)
+    if random.randint(0, 9) == 0:
+        print('Injecting requests chaos!')
+        raise requests.exceptions.ConnectionError('nope')
+    else:
+        return real_requests_get(url, params)
+
+
 real_urlopen = urllib2.urlopen = urllib2.urlopen
 urllib2.urlopen = chaos_urlopen
+real_requests_get = requests.get
+requests.get = chaos_requests_get
 
 key = os.environ['FLICKR_API_KEY']
 secret = os.environ['FLICKR_API_SECRET']
