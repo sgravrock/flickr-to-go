@@ -46,6 +46,13 @@ class FlickrApiDownloader:
             page_ix += 1
 
     def _fetch(self, method, params, data_accessor, test_response):
+        for i in xrange(0, 3):
+            result = self._fetch_once(method, params, data_accessor,
+                    test_response)
+            if result:
+                return result
+
+    def _fetch_once(self, method, params, data_accessor, test_response):
         try:
             doc = method(**params)
         except HTTPException, e:

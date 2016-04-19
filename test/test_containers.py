@@ -220,6 +220,5 @@ class TestDownloadSets(unittest.TestCase):
         file_store.save_json.assert_not_called()
         params = {'nojsoncallback': 1, 'format': 'json', 'page': 1,
                 'per_page': 2, 'photoset_id': '1'}
-        self.assertEqual(error_handler.errors, [
-            (flickr.photosets.getPhotos, params, error)
-        ])
+        self.assertIn((flickr.photosets.getPhotos, params, error),
+                error_handler.errors)
