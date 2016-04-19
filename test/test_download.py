@@ -9,9 +9,9 @@ from StringIO import StringIO
 from download import FlickrApiDownloader, ErrorHandler
 
 class TestPagedDownload(unittest.TestCase):
-    @patch('urllib2.AbstractHTTPHandler.do_open')
-    def test_httpexception(self, mock_do_open):
-        error = mock_do_open.side_effect = BadStatusLine('nope')
+    @patch('urllib2.urlopen')
+    def test_httpexception(self, mock_urlopen):
+        error = mock_urlopen.side_effect = BadStatusLine('nope')
         flickr_api.set_keys(api_key='test', api_secret='test')
         file_store = Mock()
         error_handler = ErrorHandler(StringIO())
@@ -42,9 +42,9 @@ class TestPagedDownload(unittest.TestCase):
         self.assertEqual(error_handler.errors, [(method, params, response)])
 
 class TestDownload(unittest.TestCase):
-    @patch('urllib2.AbstractHTTPHandler.do_open')
-    def test_httpexception(self, mock_do_open):
-        error = mock_do_open.side_effect = BadStatusLine('nope')
+    @patch('urllib2.urlopen')
+    def test_httpexception(self, mock_urlopen):
+        error = mock_urlopen.side_effect = BadStatusLine('nope')
         flickr_api.set_keys(api_key='test', api_secret='test')
         file_store = Mock()
         error_handler = ErrorHandler(StringIO())
