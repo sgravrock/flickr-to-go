@@ -22,5 +22,8 @@ def require_env(key):
 args = parse_args()
 key = require_env('FLICKR_API_KEY')
 secret = require_env('FLICKR_API_SECRET')
-if not flickr_to_go(args.dest, args.savecreds, key, secret):
-	exit(1)
+try:
+    if not flickr_to_go(args.dest, args.savecreds, key, secret):
+        exit(1)
+except KeyboardInterrupt:
+    exit(1)
