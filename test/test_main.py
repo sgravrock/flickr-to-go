@@ -3,6 +3,8 @@ from mock import Mock, patch
 from tempfile import mkdtemp
 from shutil import rmtree
 from StringIO import StringIO
+import time
+import os
 import main
 
 @patch('main.photo.download')
@@ -23,3 +25,14 @@ class TestMain(unittest.TestCase):
         main.flickr_to_go(self.dir, False, '', '', output)
         download_containers.assert_not_called()
         download_photos.assert_not_called()
+
+    @patch('time.time')
+    def test_saves_timestamp_on_success(self, get_time, authenticate,
+            download_photolist, download_containers, download_photos):
+        get_time.side_effect = [1461270854.6, 1461271102]
+        output = StringIO()
+        ok = main.flickr_to_go(self.dir, False, '', '', output)
+        self.assertTrue(ok)
+        with open(os.path.join(self.dir, 'timestamp')) as f:
+            self.assertEqual('1461270855', f.read())
+        pass

@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import flickr_api
 from flickr_api import auth
 from flickr_api.api import flickr
@@ -11,6 +12,7 @@ import containers
 from download import FlickrApiDownloader, ErrorHandler
 
 def flickr_to_go(dest, savecreds, key, secret, output=sys.stdout):
+    start_time = time.time()
     flickr_api.set_keys(api_key=key, api_secret=secret)
     file_store = FileStore(dest)
     user = authenticate(savecreds, flickr_api, auth.AuthHandler, file_store)
@@ -33,4 +35,6 @@ def flickr_to_go(dest, savecreds, key, secret, output=sys.stdout):
             print("Errors are logged to %s" % err_path)
             return False
 
+    with open(os.path.join(dest, 'timestamp'), 'w') as f:
+        f.write(str(int(round(start_time))))
     return True
