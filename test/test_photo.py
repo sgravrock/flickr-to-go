@@ -81,7 +81,7 @@ class TestPhoto(unittest.TestCase):
 
         file_store = Mock()
         file_store.exists.return_value = False
-        photo.download_originals(photos, file_store, requests, StringIO())
+        photo.download_originals(photos, [], file_store, requests, StringIO())
         file_store.save_image.assert_has_calls([
                 call('originals/25461030990_o.jpg', responses[0]),
                 call('originals/23793491473_o.jpg', responses[1])])
@@ -92,7 +92,7 @@ class TestPhoto(unittest.TestCase):
         requests = ThrowsTwice(response)
         file_store = Mock()
         file_store.exists.return_value = False
-        photo.download_originals(photos, file_store, requests, StringIO())
+        photo.download_originals(photos, [], file_store, requests, StringIO())
         file_store.save_image.assert_has_calls([
                 call('originals/25461030990_o.jpg', response)])
 
@@ -102,7 +102,7 @@ class TestPhoto(unittest.TestCase):
         requests = ErrorsTwice(response)
         file_store = Mock()
         file_store.exists.return_value = False
-        photo.download_originals(photos, file_store, requests, StringIO())
+        photo.download_originals(photos, [], file_store, requests, StringIO())
         file_store.save_image.assert_has_calls([
                 call('originals/25461030990_o.jpg', response)])
 
@@ -113,7 +113,7 @@ class TestPhoto(unittest.TestCase):
         file_store.exists.return_value = False
         threw = False
         try:
-            photo.download_originals(photos, file_store, requests,
+            photo.download_originals(photos, [], file_store, requests,
                     StringIO())
         except UnmockedUrlException:
             threw = True
@@ -125,8 +125,27 @@ class TestPhoto(unittest.TestCase):
         requests = Mock()
         file_store = Mock()
         file_store.exists.return_value = True
-        photo.download_originals(photos, file_store, requests, StringIO())
+        photo.download_originals(photos, [], file_store, requests, StringIO())
         self.assertEqual(requests.get.call_count, 0)
+
+    def test_download_originals_downloads_modified(self):
+        photos = [
+            {'id': '25461030990', 'url_o': 'https://farm2.staticflickr.com/1521/25461030990_3621f6ae2d_o.jpg'},
+            {'id': '23793491473', 'url_o': 'https://farm2.staticflickr.com/1514/23793491473_11cf9041b4_o.jpg'}
+        ]
+        response = '\xff\xd8\xff\xe1\x16&Exif\x00\x00II*\x00\x08\x00\x00\x00'
+        requests = MockRequests()
+        requests.contents[photos[0]['url_o']] = response
+
+        for i in xrange(0, len(photos)):
+            requests.contents[photos[i]['url_o']] = response
+
+        file_store = Mock()
+        file_store.exists.return_value = True
+        photo.download_originals(photos, ['25461030990'], file_store, requests,
+                StringIO())
+        file_store.save_image.assert_called_with(
+                'originals/25461030990_o.jpg', response)
 
     def test_download_info(self):
         photos = [

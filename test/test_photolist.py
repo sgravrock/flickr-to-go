@@ -4,7 +4,7 @@ import photolist
 from download import FlickrApiDownloader
 import json
 
-class MockFlickrApi:
+class MockFlickrApiForDownload:
     def __init__(self, photos_return_values):
         self.people = MockFlickrPeople(photos_return_values)
 
@@ -24,7 +24,7 @@ def build_photos_response(photolist):
 
 
 
-class TestPhotoList(unittest.TestCase):
+class TestPhotoListDownload(unittest.TestCase):
     def setUp(self):
         self.photos = [
             {"id": "25461030990","owner": "21041082@N02","secret": "x",
@@ -41,9 +41,9 @@ class TestPhotoList(unittest.TestCase):
         self.page_size = 2
         page1 = build_photos_response(self.photos[0:2])
         page2 = build_photos_response(self.photos[2:3])
-        self.flickr = MockFlickrApi([page1, page2])
+        self.flickr = MockFlickrApiForDownload([page1, page2])
 
-    def test_download_fetches(self):
+    def test_fetches(self):
         downloader = FlickrApiDownloader(MockFileStore(), Mock())
         result = photolist.download(downloader, self.flickr, self.page_size)
         self.flickr.people.getPhotos.assert_has_calls([
@@ -53,8 +53,41 @@ class TestPhotoList(unittest.TestCase):
                     format='json', nojsoncallback=1)])
         self.assertEqual(result, self.photos)
 
-    def test_download_saves(self):
+    def test_saves(self):
         file_store = MockFileStore()
         downloader = FlickrApiDownloader(file_store, Mock())
         photolist.download(downloader, self.flickr, self.page_size)
         file_store.save_json.assert_called_with('photos.json', self.photos)
+
+
+class MockFlickrApiForRecent:
+    def __init__(self, recently_updated_return_values):
+        self.photos = MockFlickrPhotos(recently_updated_return_values)
+
+class MockFlickrPhotos:
+    def __init__(self, recently_updated_return_values):
+        side_effect = lambda **kwargs: \
+                recently_updated_return_values[kwargs['page'] - 1]
+        self.recentlyUpdated = Mock(side_effect=side_effect)
+
+def build_recent_response(ids):
+    return json.dumps({'photos': {'photo': [{'id': x} for x in ids]}})
+
+class TestPhotoListFetchRecentlyUpdated(unittest.TestCase):
+    def setUp(self):
+        self.recently_updated = [4, 5, 6]
+        self.page_size = 2
+        page1 = build_recent_response(self.recently_updated[0:2])
+        page2 = build_recent_response(self.recently_updated[2:3])
+        self.flickr = MockFlickrApiForRecent([page1, page2])
+
+    def test_fetch_recently_updated(self):
+        downloader = FlickrApiDownloader(MockFileStore(), Mock())
+        result = photolist.fetch_recently_updated(12345, downloader,
+                self.flickr, 2)
+        self.flickr.photos.recentlyUpdated.assert_has_calls([
+                call(min_date=12345, page=1, per_page=2, format='json',
+                        nojsoncallback=1),
+                call(min_date=12345, page=2, per_page=2, format='json',
+                        nojsoncallback=1)])
+        self.assertEqual(result, self.recently_updated)

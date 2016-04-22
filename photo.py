@@ -3,27 +3,30 @@ import sys
 import os
 import json
 
-def download(photos, downloader, flickr):
-    download_originals(photos, downloader.file_store)
+def download(photos, recently_updated_ids, downloader, flickr):
+    download_originals(photos, recently_updated_ids, downloader.file_store)
     download_info(photos, downloader, flickr)
 
-def download_originals(photolist, file_store, requests=requests,
-        logger=sys.stdout):
+def download_originals(photolist, recently_updated_ids, file_store,
+        requests=requests, logger=sys.stdout):
     for photo in photolist:
-        _download_original(photo, file_store, requests, logger)
+        if _should_download(photo, recently_updated_ids, file_store):
+            _download_original(photo, file_store, requests, logger)
+
+def _should_download(photo, recently_updated_ids, file_store):
+    return (photo['id'] in recently_updated_ids or
+            not file_store.exists(original_filename(photo)))
 
 def _download_original(photo, file_store, requests, logger):
     filename = original_filename(photo)
-    if not file_store.exists(filename):
-        logger.write("Downloading %s\n" % photo['id'])
-        for i in xrange(0, 3):
-            try:
-                response = requests.get(photo['url_o'])
-            except Exception, e:
-                if i == 2:
-                    raise
-        file_store.save_image(filename, response.content)
-        return
+    logger.write("Downloading %s\n" % photo['id'])
+    for i in xrange(0, 3):
+        try:
+            response = requests.get(photo['url_o'])
+        except Exception, e:
+            if i == 2:
+                raise
+    file_store.save_image(filename, response.content)
 
 def original_filename(photo):
     return 'originals/%s_o.jpg' % photo['id']
