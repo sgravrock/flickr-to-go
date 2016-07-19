@@ -52,7 +52,7 @@ class TestMain(unittest.TestCase):
 
         self.assertTrue(ok)
         fetch_recently_updated.assert_called_with(1461270855, ANY, ANY)
-        download_photos.assert_called_with(photolist, updated, ANY, ANY)
+        download_photos.assert_called_with(photolist, updated, ANY, ANY, ANY, ANY)
         with open(os.path.join(self.dir, 'timestamp')) as f:
             self.assertEqual('1461271103', f.read())
 
@@ -62,4 +62,4 @@ class TestMain(unittest.TestCase):
         photolist = download_photolist.return_value = [{'id': 42}]
         main.flickr_to_go(self.dir, False, '', '', StringIO())
         fetch_recently_updated.assert_not_called()
-        download_photos.assert_called_with(photolist, [], ANY, ANY)
+        download_photos.assert_called_with(photolist, [], ANY, ANY, ANY, ANY)

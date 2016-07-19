@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import requests
 import flickr_api
 from flickr_api import auth
 from flickr_api.api import flickr
@@ -37,7 +38,8 @@ def flickr_to_go(dest, savecreds, key, secret, output=sys.stdout):
         else:
             recently_updated = photolist.fetch_recently_updated(last_time,
                 downloader, flickr) or []
-        photo.download(photos, recently_updated, downloader, flickr)
+        photo.download(photos, recently_updated, downloader, flickr, requests,
+                output)
 
         if errors.has_errors():
             print("Some requests failed.")

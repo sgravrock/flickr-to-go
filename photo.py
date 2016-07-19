@@ -1,14 +1,14 @@
-import requests
 import sys
 import os
 import json
 
-def download(photos, recently_updated_ids, downloader, flickr):
-    download_originals(photos, recently_updated_ids, downloader.file_store)
-    download_info(photos, downloader, flickr)
+def download(photos, recently_updated_ids, downloader, flickr, requests, logger):
+    download_originals(photos, recently_updated_ids, downloader.file_store,
+            requests, logger)
+    download_info(photos, downloader, flickr, logger)
 
 def download_originals(photolist, recently_updated_ids, file_store,
-        requests=requests, logger=sys.stdout):
+        requests, logger=sys.stdout):
     for photo in photolist:
         if _should_download(photo, recently_updated_ids, file_store):
             _download_original(photo, file_store, requests, logger)

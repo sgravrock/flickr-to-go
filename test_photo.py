@@ -5,6 +5,7 @@ import json
 from StringIO import StringIO
 import requests
 from download import FlickrApiDownloader
+from mock_requests import MockRequests, UnmockedUrlException
 
 class ThrowsTwice:
     def __init__(self, successful_response):
@@ -36,22 +37,6 @@ class ErrorsTwice:
         else:
             resp.status_code = 500
         return resp
-
-class UnmockedUrlException(Exception):
-    pass
-
-class MockRequests:
-    def __init__(self):
-        self.contents = {}
-
-    def get(self, url):
-        if url not in self.contents:
-            raise UnmockedUrlException('Un-mocked URL: ' + url)
-        return MockResponse(self.contents[url])
-
-class MockResponse:
-    def __init__(self, content):
-        self.content = content
 
 class MockFlickrApi:
     def __init__(self, photo_infos):
