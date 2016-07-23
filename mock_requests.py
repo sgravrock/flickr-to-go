@@ -1,6 +1,6 @@
 class MockRequests:
-    def __init__(self):
-        self.contents = {}
+    def __init__(self, contents=None):
+        self.contents = {} if contents is None else contents
 
     def get(self, url):
         if url not in self.contents:
