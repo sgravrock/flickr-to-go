@@ -31,17 +31,18 @@ class AuthConsoleUi:
 
 def authenticate(savecreds, api_key, api_secret, credential_store, 
         ui_adapter=None):
-    if credential_store.has_saved_credentials():
-        raise Exception('nope, not yet')
-#        ok = authenticate_saved(flickr_api, credential_store)
+    access_token = credential_store.saved_credentials()
+    if access_token:
+        return create_session(api_key, api_secret, access_token)
     else:
         return authenticate_interactive(savecreds, api_key, api_secret,
                 credential_store, ui_adapter)
 
-def authenticate_saved(flickr_api, credential_store):
-    flickr_api.set_auth_handler(credential_store.credentials_path())
-    # TODO: Can this fail? If so, how do we detect it?
-    return True
+def create_session(api_key, api_secret, access_token):
+    return OAuth1Session(api_key,
+                         client_secret=api_secret,
+                         resource_owner_key=access_token['token'],
+                         resource_owner_secret=access_token['secret'])
 
 def authenticate_interactive(savecreds, api_key, api_secret,
         credential_store, ui_adapter):
@@ -61,11 +62,10 @@ def authenticate_interactive(savecreds, api_key, api_secret,
         ui_adapter.error('Login failed.')
         return False
 
-    return OAuth1Session(api_key,
-                         client_secret=api_secret,
-                         resource_owner_key=access_token['token'],
-                         resource_owner_secret=access_token['secret'])
-                         
+    if savecreds:
+        credential_store.save_credentials(access_token)
+
+    return create_session(api_key, api_secret, access_token)
 
 def get_request_token(session):
     response = session.fetch_request_token(request_token_url)

@@ -21,16 +21,15 @@ class FileStore:
     def exists(self, name):
         return os.path.exists(self.qualify(name))
 
-    def credentials_path(self):
-        return self.qualify('flickr-credentials')
+    def save_credentials(self, creds):
+        return self.save_json('flickr-credentials', creds)
 
-    def has_saved_credentials(self):
+    def saved_credentials(self):
         try:
-            with open(self.credentials_path()) as f:
-                f.read()
+            with open(self.qualify('flickr-credentials')) as f:
+                return json.load(f)
         except IOError:
             return False
-        return True
 
     def ensure_dir(self, filename):
         dirname = os.path.dirname(filename)
