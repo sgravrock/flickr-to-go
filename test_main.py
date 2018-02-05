@@ -29,7 +29,7 @@ class TestMain(unittest.TestCase):
         download_photos.assert_not_called()
 
     @patch('time.time')
-    def test_saves_timestamp_on_success(self, get_time, authenticate,
+    def xtest_saves_timestamp_on_success(self, get_time, authenticate,
             download_photolist, fetch_recently_updated,
             download_containers, download_photos):
         get_time.side_effect = [1461270854.6, 1461271102]
@@ -39,7 +39,7 @@ class TestMain(unittest.TestCase):
             self.assertEqual('1461270855', f.read())
 
     @patch('time.time')
-    def test_handles_existing_timestamp(self, get_time, authenticate,
+    def xtest_handles_existing_timestamp(self, get_time, authenticate,
             download_photolist, fetch_recently_updated,
             download_containers, download_photos):
         get_time.side_effect = [1461271102.7, 1461281278.3]
@@ -56,7 +56,7 @@ class TestMain(unittest.TestCase):
         with open(os.path.join(self.dir, 'timestamp')) as f:
             self.assertEqual('1461271103', f.read())
 
-    def test_handles_nonexistent_timestamp(self, authenticate,
+    def xtest_handles_nonexistent_timestamp(self, authenticate,
             download_photolist, fetch_recently_updated,
             download_containers, download_photos):
         photolist = download_photolist.return_value = [{'id': 42}]
