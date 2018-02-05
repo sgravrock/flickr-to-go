@@ -1,6 +1,12 @@
 import sys
 import subprocess
-from urllib2 import HTTPError
+from requests_oauthlib import OAuth1Session
+from requests_oauthlib.oauth1_session import TokenRequestDenied
+
+
+request_token_url = 'https://www.flickr.com/services/oauth/request_token'
+base_authorization_url = 'https://www.flickr.com/services/oauth/authorize'
+access_token_url = 'https://www.flickr.com/services/oauth/access_token'
 
 class AuthConsoleUi:
     def __init__(self, stdin=sys.stdin, stdout=sys.stdout,
@@ -23,38 +29,59 @@ class AuthConsoleUi:
     def error(self, msg):
         self.stderr.write(msg + "\n")
 
-
-def authenticate(savecreds, flickr_api, auth_handler_class,
-        credential_store, ui_adapter=None):
+def authenticate(savecreds, api_key, api_secret, credential_store, 
+        ui_adapter=None):
     if credential_store.has_saved_credentials():
-        ok = authenticate_saved(flickr_api, credential_store)
+        raise Exception('nope, not yet')
+#        ok = authenticate_saved(flickr_api, credential_store)
     else:
-        ok = authenticate_interactive(savecreds, flickr_api,
-                auth_handler_class, credential_store, ui_adapter)
-    if ok:
-        return flickr_api.test.login()
+        return authenticate_interactive(savecreds, api_key, api_secret,
+                credential_store, ui_adapter)
 
 def authenticate_saved(flickr_api, credential_store):
     flickr_api.set_auth_handler(credential_store.credentials_path())
     # TODO: Can this fail? If so, how do we detect it?
     return True
 
-def authenticate_interactive(savecreds, flickr_api, auth_handler_class,
+def authenticate_interactive(savecreds, api_key, api_secret,
         credential_store, ui_adapter):
     if not ui_adapter:
         ui_adapter = AuthConsoleUi()
 
-    a = auth_handler_class(callback='oob')
-    code = ui_adapter.prompt_for_code(a.get_authorization_url('read'))
-    if code == "":
+    session = OAuth1Session(api_key, client_secret=api_secret, callback_uri='oob')
+    request_token = get_request_token(session)
+    authz_url = session.authorization_url(base_authorization_url, perms='read')
+    verifier = ui_adapter.prompt_for_code(authz_url)
+    if verifier == "":
+        return False
+    
+    try:
+        access_token = get_access_token(api_key, api_secret, request_token, verifier)
+    except TokenRequestDenied:
+        ui_adapter.error('Login failed.')
         return False
 
-    try:
-        a.set_verifier(code)
-    except HTTPError, e:
-        ui_adapter.error("Could not log in. Server returned %s." % e.code)
-        return False
-    flickr_api.set_auth_handler(a)
-    if savecreds:
-        a.save(credential_store.credentials_path())
-    return True
+    return OAuth1Session(api_key,
+                         client_secret=api_secret,
+                         resource_owner_key=access_token['token'],
+                         resource_owner_secret=access_token['secret'])
+                         
+
+def get_request_token(session):
+    response = session.fetch_request_token(request_token_url)
+    return {
+        'token': response.get('oauth_token'),
+        'secret': response.get('oauth_token_secret')
+    }
+
+def get_access_token(api_key, api_secret, request_token, verifier):
+    session = OAuth1Session(api_key,
+                            client_secret=api_secret,
+                            resource_owner_key=request_token['token'],
+                            resource_owner_secret=request_token['secret'],
+                            verifier=verifier)
+    response = session.fetch_access_token(access_token_url)
+    return {
+        'token': response.get('oauth_token'),
+        'secret': response.get('oauth_token_secret')
+    }

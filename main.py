@@ -1,9 +1,9 @@
 import os
 import sys
 import time
-import flickr_api
-from flickr_api import auth
-from flickr_api.api import flickr
+#import flickr_api
+#from flickr_api import auth
+#from flickr_api.api import flickr
 from authentication import authenticate
 from storage import FileStore
 import photolist
@@ -16,11 +16,12 @@ from download import FlickrApiDownloader, ErrorHandler
 def flickr_to_go(dest, savecreds, key, secret, output=sys.stdout):
     start_time = time.time()
     timestamp_path = os.path.join(dest, 'timestamp')
-    flickr_api.set_keys(api_key=key, api_secret=secret)
     file_store = FileStore(dest)
-    user = authenticate(savecreds, flickr_api, auth.AuthHandler, file_store)
-    if not user:
+    session = authenticate(savecreds, key, secret, file_store)
+    if not session:
         return False
+
+    return True
 
     err_path = os.path.join(dest, "errors.txt")
     with open(err_path, 'w') as errfile:
