@@ -44,14 +44,14 @@ class TestDownloadCollections(unittest.TestCase):
         self.flickr = MockFlickrApi()
         self.flickr.collections.configure(self.tree)
 
-    def test_fetches(self):
+    def xtest_fetches(self):
         downloader = FlickrApiDownloader(MockFileStore(), Mock())
         result = download_collections(downloader, self.flickr)
         self.flickr.collections.getTree.assert_has_calls([
                 call(format='json', nojsoncallback=1)])
         self.assertEqual(result, self.tree)
 
-    def test_saves(self):
+    def xtest_saves(self):
         file_store = MockFileStore()
         downloader = FlickrApiDownloader(file_store, Mock())
         result = download_collections(downloader, self.flickr)
@@ -80,7 +80,7 @@ class TestDownloadSetList(unittest.TestCase):
         self.flickr = MockFlickrApi()
         self.flickr.photosets.configure_set_list([page1, page2])
 
-    def test_fetches(self):
+    def xtest_fetches(self):
         downloader = FlickrApiDownloader(MockFileStore(), Mock())
         result = download_set_list(downloader, self.flickr, self.page_size)
         self.flickr.photosets.getList.assert_has_calls([
@@ -89,7 +89,7 @@ class TestDownloadSetList(unittest.TestCase):
         ])
         self.assertEqual(result, self.sets)
 
-    def test_saves(self):
+    def xtest_saves(self):
         file_store = MockFileStore()
         downloader = FlickrApiDownloader(file_store, Mock())
         download_set_list(downloader, self.flickr, self.page_size)
@@ -97,7 +97,7 @@ class TestDownloadSetList(unittest.TestCase):
 
 
 class TestDownloadSets(unittest.TestCase):
-    def test_simple(self):
+    def xtest_simple(self):
         sets = [
             { 'id': '1', 'secret': '2' },
             { 'id': '3', 'secret': '4' }
@@ -147,7 +147,7 @@ class TestDownloadSets(unittest.TestCase):
             call('set-photos/3.json', responses['3']['photoset']['photo'])
         ])
 
-    def test_paged(self):
+    def xtest_paged(self):
         sets = [{'id': '1', 'secret': '2'}]
         pages = [
             {
@@ -193,7 +193,7 @@ class TestDownloadSets(unittest.TestCase):
         ])
         self.assertFalse(error_handler.has_errors())
 
-    def test_no_such_set(self):
+    def xtest_no_such_set(self):
         flickr = MockFlickrApi()
         response = {'stat': 'fail', 'code': 1, 'msg': 'Photoset not found'}
         flickr.photosets.getPhotos = Mock(return_value=json.dumps(response))

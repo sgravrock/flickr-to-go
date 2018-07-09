@@ -29,7 +29,7 @@ class TestMain(unittest.TestCase):
         download_photos.assert_not_called()
 
     @patch('time.time')
-    def xtest_saves_timestamp_on_success(self, get_time, authenticate,
+    def test_saves_timestamp_on_success(self, get_time, authenticate,
             download_photolist, fetch_recently_updated,
             download_containers, download_photos):
         get_time.side_effect = [1461270854.6, 1461271102]

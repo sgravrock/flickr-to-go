@@ -147,7 +147,7 @@ class TestPhoto(unittest.TestCase):
         file_store.save_image.assert_called_with(
                 'originals/25461030990_o.jpg', response)
 
-    def test_download_info(self):
+    def xtest_download_info(self):
         photos = [
             {'id': '1'},
             {'id': '2'}
@@ -166,7 +166,7 @@ class TestPhoto(unittest.TestCase):
             call('photo-info/2.json', responses['2']['photo'])
         ])
 
-    def test_download_infos_skips_existing(self):
+    def xtest_download_infos_skips_existing(self):
         photos = [{'id': '1'}]
         file_store = Mock()
         file_store.exists.return_value = True

@@ -1,10 +1,9 @@
 import os
 import sys
 import time
-#import flickr_api
-#from flickr_api import auth
-#from flickr_api.api import flickr
+# TODO: combine authentication and flickr_api_client?
 from authentication import authenticate
+from flickr_api_client import FlickrApiClient
 from storage import FileStore
 import photolist
 import photo
@@ -21,24 +20,23 @@ def flickr_to_go(dest, savecreds, key, secret, output=sys.stdout):
     if not session:
         return False
 
-    return True
-
+    client = FlickrApiClient(session)
     err_path = os.path.join(dest, "errors.txt")
     with open(err_path, 'w') as errfile:
         errors = ErrorHandler(errfile)
         downloader = FlickrApiDownloader(file_store, errors)
-        photos = photolist.download(downloader, flickr)
+        photos = photolist.download(downloader, client)
         if photos is None:
             output.write("Photo list download failed. Can't continue.\n")
             return False
-        containers.download(downloader, flickr)
-        last_time = read_timestamp(timestamp_path)
-        if last_time is None:
-            recently_updated = []
-        else:
-            recently_updated = photolist.fetch_recently_updated(last_time,
-                downloader, flickr) or []
-        photo.download(photos, recently_updated, downloader, flickr)
+        # containers.download(downloader, flickr)
+        # last_time = read_timestamp(timestamp_path)
+        # if last_time is None:
+        #     recently_updated = []
+        # else:
+        #     recently_updated = photolist.fetch_recently_updated(last_time,
+        #         downloader, flickr) or []
+        # photo.download(photos, recently_updated, downloader, flickr)
 
         if errors.has_errors():
             print("Some requests failed.")

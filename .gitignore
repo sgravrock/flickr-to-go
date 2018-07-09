@@ -1,5 +1,7 @@
 venv
 dest
+ftg2
+ftg3
 .envrc
 *.pyc
 *.sw?
