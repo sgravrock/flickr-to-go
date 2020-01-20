@@ -1,3 +1,6 @@
+This is a tool that backs up your Flickr account. It's incomplete and won't
+be finished. Use https://github.com/sgravrock/flickr-to-go-go instead.
+
 # Initial setup
 
 1. Install virtualenv, if it's not already solved.
